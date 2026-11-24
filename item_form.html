@@ -1,0 +1,80 @@
+{% extends "layout.html" %}
+
+{% block title %}: {% if editing %}Edit item{% else %}Add item{% endif %}{% endblock %}
+
+{% block main %}
+<div class="card form-card">
+    <h1>{% if editing %}Edit {{ item.name }}{% else %}Add to your closet{% endif %}</h1>
+
+    <form method="post" enctype="multipart/form-data"
+          action="{% if editing %}/edit/{{ item.id }}{% else %}/upload{% endif %}">
+        <div class="form-grid">
+            <div>
+                {% if editing %}
+                    <img class="preview" src="/static/uploads/{{ item.image }}" alt="{{ item.name }}">
+                {% else %}
+                    <label>Photo (.png or .jpg)
+                        <input type="file" name="photo" id="photo" accept=".png,.jpg,.jpeg,image/png,image/jpeg" required>
+                    </label>
+                    <img class="preview" id="preview" alt="" hidden>
+                    <label class="check"><input type="checkbox" name="remove_bg" checked> Remove background</label>
+                    <p class="small">Tip: photograph clothes flat on a plain background for the cleanest cut-out.</p>
+                {% endif %}
+            </div>
+
+            <div>
+                <label>Name <input name="name" value="{{ item.name or '' }}" placeholder="e.g. Grey crewneck" required></label>
+
+                <label>Clothing type
+                    <select name="category" id="category" required>
+                        <option value="" disabled {% if not item.category %}selected{% endif %}>Choose…</option>
+                        {% for c in CATEGORIES %}
+                            <option value="{{ c }}" {% if c == item.category %}selected{% endif %}>{{ c|capitalize }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+
+                <!-- Each option knows which category it belongs to; script.js hides the others -->
+                <label id="subtype-label">Style
+                    <select name="subtype" id="subtype">
+                        <option value="">Choose…</option>
+                        {% for c, subtypes in CATEGORIES.items() %}
+                            {% for s in subtypes %}
+                                <option value="{{ s }}" data-category="{{ c }}" {% if s == item.subtype %}selected{% endif %}>{{ s|capitalize }}</option>
+                            {% endfor %}
+                        {% endfor %}
+                    </select>
+                </label>
+
+                <label>Color <input name="color" value="{{ item.color or '' }}" placeholder="e.g. navy"></label>
+
+                <fieldset>
+                    <legend>Occasion (pick any)</legend>
+                    {% for o in OCCASIONS %}
+                        <label class="chip"><input type="checkbox" name="occasions" value="{{ o }}"
+                            {% if item.occasions and o in item.occasions.split(",") %}checked{% endif %}> {{ o|capitalize }}</label>
+                    {% endfor %}
+                </fieldset>
+
+                <fieldset>
+                    <legend>Season (pick any)</legend>
+                    {% for s in SEASONS %}
+                        <label class="chip"><input type="checkbox" name="seasons" value="{{ s }}"
+                            {% if item.seasons and s in item.seasons.split(",") %}checked{% endif %}> {{ s|capitalize }}</label>
+                    {% endfor %}
+                </fieldset>
+
+                <div class="button-row">
+                    {% if editing %}
+                        <button class="btn">Save changes</button>
+                        <a href="/" class="btn ghost">Cancel</a>
+                    {% else %}
+                        <button class="btn">Add to closet</button>
+                        <button class="btn ghost" name="another" value="1">Add &amp; upload another</button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}
