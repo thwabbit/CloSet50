@@ -1,4 +1,0 @@
-Flask
-Pillow
-# Optional: much better background removal (downloads an AI model the first time)
-# rembg
