@@ -1,0 +1,62 @@
+{% extends "layout.html" %}
+
+{% block title %}: Generate an outfit{% endblock %}
+
+{% block main %}
+<h1>What should I wear?</h1>
+
+<form class="card generator" action="/generate" method="post">
+    <label>Occasion
+        <select name="occasion">
+            <option value="">Any occasion</option>
+            {% for o in OCCASIONS %}
+                <option value="{{ o }}" {% if o == form.occasion %}selected{% endif %}>{{ o|capitalize }}</option>
+            {% endfor %}
+        </select>
+    </label>
+    <label>Season
+        <select name="season">
+            <option value="">Any season</option>
+            {% for s in SEASONS %}
+                <option value="{{ s }}" {% if s == form.season %}selected{% endif %}>{{ s|capitalize }}</option>
+            {% endfor %}
+        </select>
+    </label>
+    <label>Temperature °F <span class="small">(optional)</span>
+        <input name="temp" type="number" value="{{ form.temp or '' }}" placeholder="e.g. 58">
+    </label>
+    <label>…or today's weather in <span class="small">(city)</span>
+        <input name="city" value="{{ form.city or '' }}" placeholder="e.g. Cambridge">
+    </label>
+    <button class="btn">{% if outfit %}Shuffle{% else %}Generate outfit{% endif %}</button>
+    <p class="small full">If you give a temperature or city, the weather decides the season: below 40°F → winter + thick jacket,
+        40–65°F → fall/spring + light jacket, 66–75°F → fall/spring, above 75°F → summer with shorts.</p>
+</form>
+
+{% if temp is not none %}
+    <p class="weather">It's <strong>{{ temp }}°F</strong>{% if form.city %} in {{ form.city }}{% endif %} —
+        looking for {{ seasons|join("/") }} clothes{% if jacket %} and a {{ jacket }} jacket{% endif %}.</p>
+{% endif %}
+
+{% if missing %}
+    <div class="missing">You're missing: <strong>{{ missing|join(", ") }}</strong>
+        {% if form.occasion %} for {{ form.occasion }}{% endif %}. <a href="/upload">Add more clothes</a> or loosen the filters.</div>
+{% endif %}
+
+{% if outfit %}
+    <div class="outfit-board">
+        {% for item in outfit %}
+            <figure>
+                <img src="/static/uploads/{{ item.image }}" alt="{{ item.name }}">
+                <figcaption>{{ item.name }}</figcaption>
+            </figure>
+        {% endfor %}
+    </div>
+
+    <form class="save-row" action="/build" method="post">
+        {% for item in outfit %}<input type="hidden" name="item_ids" value="{{ item.id }}">{% endfor %}
+        <input name="name" placeholder="Name this outfit" required>
+        <button class="btn">Save outfit</button>
+    </form>
+{% endif %}
+{% endblock %}
